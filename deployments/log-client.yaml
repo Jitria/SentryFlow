@@ -16,6 +16,7 @@ spec:
       containers:
       - name: log-client
         image: boanlab/sentryflow-log-client:v0.1
+        imagePullPolicy: Never
         env:
         - name: SERVER_ADDR
           value: "sentryflow.sentryflow.svc.cluster.local"

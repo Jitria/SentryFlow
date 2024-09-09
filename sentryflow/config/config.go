@@ -15,6 +15,7 @@ import (
 type SentryFlowConfig struct {
 	CollectorAddr string // Address for Collector gRPC
 	CollectorPort string // Port for Collector gRPC
+	WasmPort      string // Port for Collector Wasm
 
 	ExporterAddr string // IP address to use for exporter gRPC
 	ExporterPort string // Port to use for exporter gRPC
@@ -44,6 +45,7 @@ func init() {
 const (
 	CollectorAddr string = "collectorAddr"
 	CollectorPort string = "collectorPort"
+	WasmPort      string = "wasmPort"
 
 	ExporterAddr string = "exporterAddr"
 	ExporterPort string = "exporterPort"
@@ -64,6 +66,7 @@ const (
 func readCmdLineParams() {
 	collectorAddrStr := flag.String(CollectorAddr, "0.0.0.0", "Address for Collector gRPC")
 	collectorPortStr := flag.String(CollectorPort, "4317", "Port for Collector gRPC")
+	wasmPortStr := flag.String(WasmPort, "9090", "Port for Collector Wasm")
 
 	exporterAddrStr := flag.String(ExporterAddr, "0.0.0.0", "Address for Exporter gRPC")
 	exporterPortStr := flag.String(ExporterPort, "8080", "Port for Exporter gRPC")
@@ -91,6 +94,7 @@ func readCmdLineParams() {
 
 	viper.SetDefault(CollectorAddr, *collectorAddrStr)
 	viper.SetDefault(CollectorPort, *collectorPortStr)
+	viper.SetDefault(WasmPort, *wasmPortStr)
 
 	viper.SetDefault(ExporterAddr, *exporterAddrStr)
 	viper.SetDefault(ExporterPort, *exporterPortStr)
@@ -118,6 +122,7 @@ func LoadConfig() error {
 
 	GlobalConfig.CollectorAddr = viper.GetString(CollectorAddr)
 	GlobalConfig.CollectorPort = viper.GetString(CollectorPort)
+	GlobalConfig.WasmPort = viper.GetString(WasmPort)
 
 	GlobalConfig.ExporterAddr = viper.GetString(ExporterAddr)
 	GlobalConfig.ExporterPort = viper.GetString(ExporterPort)

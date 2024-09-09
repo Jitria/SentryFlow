@@ -24,6 +24,7 @@ func init() {
 // ColHandler Structure
 type ColHandler struct {
 	colService net.Listener
+	wService   net.Listener
 	grpcServer *grpc.Server
 	collectors []collectorInterface
 }
@@ -76,14 +77,18 @@ func StartCollector() bool {
 
 	log.Print("[Collector] Serving Collector gRPC services")
 
+	// Serve api Service
+	go StartAPIServer()
+
 	return true
 }
 
 // StopCollector Function
 func StopCollector() bool {
 	ColH.grpcServer.GracefulStop()
+	ShutDownAPIServer()
 
-	log.Print("[Collector] Gracefully stopped Collector gRPC services")
+	log.Print("[Collector] Gracefully stopped Collector gRPC services and API service")
 
 	return true
 }

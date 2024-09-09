@@ -33,6 +33,8 @@ message APILog {
   string method = 52;
   string path = 53;
   int32 responseCode = 54;
+
+  string authentication = 61;
 }
 
 message APIMetrics {

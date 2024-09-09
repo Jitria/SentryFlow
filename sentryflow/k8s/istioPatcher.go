@@ -20,11 +20,15 @@ type meshConfig struct {
 		EnvoyMetricsService struct {
 			Address string `yaml:"address"`
 		} `yaml:"envoyMetricsService"`
+		EnvoyWasmService struct {
+			Address string `yaml:"address"`
+		} `yaml:"envoyWasmService"`
 	} `yaml:"defaultConfig"`
 
 	DefaultProviders struct {
 		AccessLogs []string `yaml:"accessLogs"`
 		Metrics    []string `yaml:"metrics"`
+		Wasm       []string `yaml:"wasm"`
 	} `yaml:"defaultProviders"`
 
 	EnableEnvoyAccessLogService bool `yaml:"enableEnvoyAccessLogService"`
@@ -34,6 +38,10 @@ type meshConfig struct {
 			Port    string `yaml:"port"`
 			Service string `yaml:"service"`
 		} `yaml:"envoyOtelAls"`
+		EnvoyWasm struct {
+			Port    string `yaml:"port"`
+			Service string `yaml:"service"`
+		} `yaml:"envoyWasm"`
 		Name string `yaml:"name"`
 	} `yaml:"extensionProviders"`
 
@@ -58,14 +66,19 @@ func PatchIstioConfigMap() bool {
 	// set metrics and envoy access logging to Sentryflow
 	meshCfg.DefaultConfig.EnvoyAccessLogService.Address = "sentryflow.sentryflow.svc.cluster.local:4317"
 	meshCfg.DefaultConfig.EnvoyMetricsService.Address = "sentryflow.sentryflow.svc.cluster.local:4317"
+	meshCfg.DefaultConfig.EnvoyWasmService.Address = "sentryflow.sentryflow.svc.cluster.local:4318"
 
 	// add Sentryflow as Otel AL collector
-	if patched, _ := isEnvoyOtelAlPatched(meshCfg); !patched {
+	if patched, _ := isEnvoyPatched(meshCfg); !patched {
 		sfOtelAl := struct {
 			EnvoyOtelAls struct {
 				Port    string `yaml:"port"`
 				Service string `yaml:"service"`
 			} `yaml:"envoyOtelAls"`
+			EnvoyWasm struct {
+				Port    string `yaml:"port"`
+				Service string `yaml:"service"`
+			} `yaml:"envoyWasm"`
 			Name string `yaml:"name"`
 		}{
 			EnvoyOtelAls: struct {
@@ -73,6 +86,13 @@ func PatchIstioConfigMap() bool {
 				Service string `yaml:"service"`
 			}{
 				Port:    "4317",
+				Service: "sentryflow.sentryflow.svc.cluster.local",
+			},
+			EnvoyWasm: struct {
+				Port    string `yaml:"port"`
+				Service string `yaml:"service"`
+			}{
+				Port:    "4318",
 				Service: "sentryflow.sentryflow.svc.cluster.local",
 			},
 			Name: "sentryflow",
@@ -118,14 +138,19 @@ func UnpatchIstioConfigMap() bool {
 	// set metrics and envoy access logging back to empty value
 	meshCfg.DefaultConfig.EnvoyAccessLogService.Address = ""
 	meshCfg.DefaultConfig.EnvoyMetricsService.Address = ""
+	meshCfg.DefaultConfig.EnvoyWasmService.Address = ""
 
 	// remove EnvoyOtelAl
-	if patched, targetIdx := isEnvoyOtelAlPatched(meshCfg); patched {
+	if patched, targetIdx := isEnvoyPatched(meshCfg); patched {
 		tmp := make([]struct {
 			EnvoyOtelAls struct {
 				Port    string `yaml:"port"`
 				Service string `yaml:"service"`
 			} `yaml:"envoyOtelAls"`
+			EnvoyWasm struct {
+				Port    string `yaml:"port"`
+				Service string `yaml:"service"`
+			} `yaml:"envoyWasm"`
 			Name string `yaml:"name"`
 		}, 0)
 		for idx, envoyOtelAl := range meshCfg.ExtensionProviders {
@@ -201,11 +226,13 @@ func parseIstioConfigMap() (meshConfig, error) {
 }
 
 // isEnvoyOtelAlPatched Function
-func isEnvoyOtelAlPatched(meshCfg meshConfig) (bool, int) {
-	for idx, envoyOtelAl := range meshCfg.ExtensionProviders {
-		if envoyOtelAl.Name == "sentryflow" &&
-			envoyOtelAl.EnvoyOtelAls.Port == "4317" &&
-			envoyOtelAl.EnvoyOtelAls.Service == "sentryflow.sentryflow.svc.cluster.local" {
+func isEnvoyPatched(meshCfg meshConfig) (bool, int) {
+	for idx, envoyInfo := range meshCfg.ExtensionProviders {
+		if envoyInfo.Name == "sentryflow" &&
+			envoyInfo.EnvoyOtelAls.Port == "4317" &&
+			envoyInfo.EnvoyOtelAls.Service == "sentryflow.sentryflow.svc.cluster.local" &&
+			envoyInfo.EnvoyWasm.Port == "4318" &&
+			envoyInfo.EnvoyWasm.Service == "sentryflow.sentryflow.svc.cluster.local" {
 			return true, idx
 		}
 	}
@@ -226,11 +253,12 @@ func isEnvoyALProviderPatched(meshCfg meshConfig) (bool, int) {
 // isIstioAlreadyPatched Function
 func isIstioAlreadyPatched(meshCfg meshConfig) bool {
 	if meshCfg.DefaultConfig.EnvoyAccessLogService.Address != "sentryflow.sentryflow.svc.cluster.local:4317" ||
-		meshCfg.DefaultConfig.EnvoyMetricsService.Address != "sentryflow.sentryflow.svc.cluster.local:4317" {
+		meshCfg.DefaultConfig.EnvoyMetricsService.Address != "sentryflow.sentryflow.svc.cluster.local:4317" ||
+		meshCfg.DefaultConfig.EnvoyWasmService.Address != "sentryflow.sentryflow.svc.cluster.local:4318" {
 		return false
 	}
 
-	if patched, _ := isEnvoyOtelAlPatched(meshCfg); !patched {
+	if patched, _ := isEnvoyPatched(meshCfg); !patched {
 		return false
 	}
 

@@ -55,10 +55,14 @@ spec:
       containers:
       - name: sentryflow
         image: boanlab/sentryflow:v0.1
+        imagePullPolicy: Never  # Use Local Image
         ports:
         - name: otel-grpc
           protocol: TCP
           containerPort: 4317
+        - name: wasm-api
+          protocol: TCP
+          containerPort: 9090
         - name: sentryflow-grpc
           protocol: TCP
           containerPort: 8080
@@ -76,6 +80,10 @@ spec:
     protocol: TCP
     port: 4317
     targetPort: 4317
+  - name: wasm-api
+    protocol: TCP
+    port: 9090
+    targetPort: 9090
   - name: sentryflow-grpc
     protocol: TCP
     port: 8080

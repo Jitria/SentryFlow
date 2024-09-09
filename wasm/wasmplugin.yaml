@@ -1,0 +1,9 @@
+apiVersion: extensions.istio.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: detect-log4j
+  namespace: default
+spec:
+  url: oci://jitria/wasm-plugin:latest
+  imagePullPolicy: Always
+  phase: UNSPECIFIED_PHASE
