@@ -1,0 +1,6 @@
+[submodule "clients/TC/bpf/xdp-tools"]
+	path = clients/TC/bpf/xdp-tools
+	url = https://github.com/xdp-project/xdp-tools/
+[submodule "clients/TC/bpf/libbpf"]
+	path = clients/TC/bpf/libbpf
+	url = https://github.com/libbpf/libbpf/
