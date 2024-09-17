@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"TC/types"
 	"context"
 	"log"
 	"os"
@@ -311,101 +310,4 @@ func RunInformers(stopChan chan struct{}, wg *sync.WaitGroup) {
 	}
 
 	log.Print("[RunInformers] Started all Kubernetes informers")
-}
-
-func PatchNamespaces() bool {
-	namespaces, err := K8sH.clientSet.CoreV1().Namespaces().List(context.Background(), v1.ListOptions{})
-	if err != nil {
-		log.Printf("[PatchNamespaces] Failed to get Namespaces: %v", err)
-		return false
-	}
-
-	for _, ns := range namespaces.Items {
-		namespace := ns.DeepCopy()
-
-		if namespace.Name == "ack" {
-			continue
-		}
-
-		namespace.Labels["istio-injection"] = "enabled"
-
-		if _, err := K8sH.clientSet.CoreV1().Namespaces().Update(context.TODO(), namespace, v1.UpdateOptions{FieldManager: "patcher"}); err != nil {
-			log.Printf("[PatchNamespaces] Failed to update Namespace %s: %v", namespace.Name, err)
-			return false
-		}
-
-		log.Printf("[PatchNamespaces] Updated Namespace %s", namespace.Name)
-	}
-
-	log.Print("[PatchNamespaces] Updated all Namespaces")
-
-	return true
-}
-
-// == //
-
-// lookupIPAddress Function
-func lookupIPAddress(ipAddr string) interface{} {
-	// Look for pod map
-	pod, ok := K8sH.PodMap[ipAddr]
-	if ok {
-		return pod
-	}
-
-	// Look for service map
-	service, ok := K8sH.ServiceMap[ipAddr]
-	if ok {
-		return service
-	}
-
-	return nil
-}
-
-func LookupK8sResource(srcIP string) types.K8sResource {
-	ret := types.K8sResource{
-		Namespace: "Unknown",
-		Name:      "Unknown",
-		Labels:    make(map[string]string),
-		Type:      types.K8sResourceTypeUnknown,
-	}
-
-	raw := lookupIPAddress(srcIP)
-
-	switch raw.(type) {
-	case *corev1.Pod:
-		pod, ok := raw.(*corev1.Pod)
-		if ok {
-			ret.Namespace = pod.Namespace
-			ret.Name = pod.Name
-			ret.Labels = pod.Labels
-			ret.Type = types.K8sResourceTypePod
-		}
-	case *corev1.Service:
-		svc, ok := raw.(*corev1.Service)
-		if ok {
-			ret.Namespace = svc.Namespace
-			ret.Name = svc.Name
-			ret.Labels = svc.Labels
-			ret.Type = types.K8sResourceTypeService
-		}
-	default:
-		if ns := lookupNamespace(srcIP); ns != nil {
-			ret.Namespace = ns.Name
-			ret.Name = ns.Name
-			ret.Labels = ns.Labels
-			ret.Type = types.K8sResourceTypeNamespace
-		} else {
-			ret.Type = types.K8sResourceTypeUnknown
-		}
-	}
-
-	return ret
-}
-
-func lookupNamespace(namespaceName string) *corev1.Namespace {
-	namespace, ok := K8sH.NamespaceMap[namespaceName]
-	if ok {
-		return namespace
-	}
-	return nil
 }

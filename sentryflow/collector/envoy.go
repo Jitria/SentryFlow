@@ -82,8 +82,10 @@ func generateAPILogsFromEnvoy(entry *envoyAccLogsData.HTTPAccessLogEntry) *proto
 	path := request.GetPath()
 	resCode := response.GetResponseCode().GetValue()
 
+	xRequestId := request.GetRequestId()
+
 	envoyAPILog := &protobuf.APILog{
-		Id:        0, // @todo zero for now
+		Id:        0,
 		TimeStamp: strconv.FormatInt(timeStamp, 10),
 
 		SrcNamespace: src.Namespace,
@@ -104,6 +106,8 @@ func generateAPILogsFromEnvoy(entry *envoyAccLogsData.HTTPAccessLogEntry) *proto
 		Method:       method,
 		Path:         path,
 		ResponseCode: int32(resCode),
+
+		Authentication: xRequestId,
 	}
 
 	return envoyAPILog
