@@ -21,6 +21,7 @@ type bpfPacket struct {
 	DstPort        uint16
 	Identification uint16
 	TcpSeq         uint32
+	X_requestId    [36]int8
 }
 
 // loadBpf returns the embedded CollectionSpec for bpf.

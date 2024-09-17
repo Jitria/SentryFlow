@@ -106,6 +106,14 @@ func IntToIPString(ip uint32) string {
 	return fmt.Sprintf("%d.%d.%d.%d", byte(ip), byte(ip>>8), byte(ip>>16), byte(ip>>24))
 }
 
+func intArrayToString(arr []int8) string {
+	bytes := make([]byte, len(arr))
+	for i, b := range arr {
+		bytes[i] = byte(b)
+	}
+	return string(bytes)
+}
+
 func showEvent(channel chan ringbuf.Record) {
 	for {
 		select {
@@ -124,6 +132,7 @@ func showEvent(channel chan ringbuf.Record) {
 			fmt.Printf("SrcPort: %d\n", event.SrcPort)
 			fmt.Printf("DstIp: %s\n", destPort)
 			fmt.Printf("DstPort: %d\n", event.DstPort)
+			fmt.Printf("XRequestID: %s\n", intArrayToString(event.X_requestId[:]))
 			fmt.Printf("TcpSequnce: %d\n", event.TcpSeq)
 			fmt.Printf("Identification: %d\n", event.Identification)
 			fmt.Printf("===============================\n")
