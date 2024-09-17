@@ -43,7 +43,7 @@ func showHeaders(c *gin.Context) {
 	wasmLog := &protobuf.APILog{
 		Id:             0,
 		Authentication: headersMap["authorization"],
-		Method:         headersMap["method"],
+		Method:         headersMap["x-request-id"],
 		Path:           headersMap["path"],
 		SrcIP:          headersMap["authority"],
 	}
