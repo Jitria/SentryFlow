@@ -14,13 +14,13 @@ import (
 )
 
 type bpfPacket struct {
-	SrcIp       uint32
-	SrcPort     uint16
-	_           [2]byte
-	DstIp       uint32
-	DstPort     uint16
-	_           [2]byte
-	X_requestId uint32
+	SrcIp          uint32
+	SrcPort        uint16
+	_              [2]byte
+	DstIp          uint32
+	DstPort        uint16
+	Identification uint16
+	TcpSeq         uint32
 }
 
 // loadBpf returns the embedded CollectionSpec for bpf.

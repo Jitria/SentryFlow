@@ -32,6 +32,9 @@ func (ak *AckService) DestroyAck() {
 
 	log.Print("[SentryFlow] Waiting for routine terminations")
 	ak.waitGroup.Wait()
+
+	bpf.BpfH.Reader.Close()
+	bpf.BpfH.Objects.Close()
 	log.Print("[SentryFlow] Terminated SentryFlow")
 }
 

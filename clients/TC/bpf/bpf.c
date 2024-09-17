@@ -26,7 +26,8 @@ typedef struct packet {
     __u32 dst_ip;
     __u16 dst_port;
 
-    __u32 x_request_id;
+    __u16 identification;
+    __u32 tcp_seq;
 } packet;
 
 const struct packet *unused1 __attribute__((unused));
@@ -96,7 +97,8 @@ int packet_analyzer_agent(struct __sk_buff *ctx) {
       packet_info->dst_ip = ipptr->daddr;
       packet_info->src_port = tcpptr->source;
       packet_info->dst_port = tcpptr->dest;
-      // packet_info->x_request_id = x_request_id; 
+      packet_info->tcp_seq = bpf_ntohl(tcpptr->seq);
+      packet_info->identification = ipptr->id; 
       bpf_ringbuf_submit(packet_info, 0);
     }
 

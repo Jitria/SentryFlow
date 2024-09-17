@@ -124,7 +124,8 @@ func showEvent(channel chan ringbuf.Record) {
 			fmt.Printf("SrcPort: %d\n", event.SrcPort)
 			fmt.Printf("DstIp: %s\n", destPort)
 			fmt.Printf("DstPort: %d\n", event.DstPort)
-			fmt.Printf("X_requestId: %s\n", event.X_requestId)
+			fmt.Printf("TcpSequnce: %d\n", event.TcpSeq)
+			fmt.Printf("Identification: %d\n", event.Identification)
 			fmt.Printf("===============================\n")
 
 		}
